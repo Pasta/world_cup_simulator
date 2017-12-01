@@ -2,6 +2,15 @@ module WorldCup exposing (..)
 
 import Html exposing (text)
 
+type alias Model =
+  { teams: List Team }
+  
+type alias Team =
+  String
 
-main =
-  text "Hello World Cup"
+type Msg
+  = NoOp
+
+init : ( Model, Cmd Msg )
+init =
+    ( { teams = ["Hello World Cup"] }, Cmd.none )
