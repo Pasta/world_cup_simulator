@@ -18,32 +18,38 @@ main =
 
 type alias Model =
   { teams: List Team }
-  
+
 type alias Team =
   String
+
+emptyModel : Model
+emptyModel =
+    { teams = ["France", "Germany"] }
 
 type Msg
   = NoOp
 
 init : ( Model, Cmd Msg )
 init =
-    ( { teams = ["Hello World Cup"] }, Cmd.none )
-    
-    
+    ( emptyModel, Cmd.none )
+
+
+viewTeam: Team -> Html Msg
+viewTeam team =
+  li [] [text team]
+
 view : Model -> Html Msg
 view model =
-  div
-    "Hello World Cup"
-  
-  
+  ul [] <|
+    List.map viewTeam model.teams
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-              
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.none
-  
-  
