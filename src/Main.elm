@@ -2,7 +2,8 @@ module Main exposing (..)
 
 import Dom
 import Html exposing (..)
--- import Html.Attributes exposing (..)
+import Html.Attributes exposing (..)
+import String.Interpolate exposing(interpolate)
 -- import Html.Events exposing (..)
 -- import Html.Keyed as Keyed
 -- import Html.Lazy exposing (lazy, lazy2)
@@ -27,7 +28,7 @@ type alias Team =
 emptyModel : Model
 emptyModel =
     { teams =
-      { name = "France", flagImageUrl = "https://en.wikipedia.org/wiki/Flag_of_France#/media/File:Flag_of_France.svg" }
+      { name = "France", flagImageUrl = "" }
       :: { name = "Germany", flagImageUrl = "" }
       :: { name = "Egypt", flagImageUrl = "" }
       :: { name = "Morocco", flagImageUrl = "" }
@@ -37,8 +38,8 @@ emptyModel =
       :: { name = "Australia", flagImageUrl = "" }
       :: { name = "Iran", flagImageUrl = "" }
       :: { name = "Japan", flagImageUrl = "" }
-      :: { name = "Korea Republic", flagImageUrl = "" }
-      :: { name = "Saudi Arabia", flagImageUrl = "" }
+      :: { name = "Korea Republic", flagImageUrl = "http://img.freeflagicons.com/preview/korea_south.png" }
+      :: { name = "Saudi Arabia", flagImageUrl = "http://img.freeflagicons.com/preview/saudi_arabia.png" }
       :: { name = "Belgium", flagImageUrl = "" }
       :: { name = "Croatia", flagImageUrl = "" }
       :: { name = "Denmark", flagImageUrl = "" }
@@ -52,7 +53,7 @@ emptyModel =
       :: { name = "Spain", flagImageUrl = "" }
       :: { name = "Sweden", flagImageUrl = "" }
       :: { name = "Switzerland", flagImageUrl = "" }
-      :: { name = "Costa Rica", flagImageUrl = "" }
+      :: { name = "Costa Rica", flagImageUrl = "http://img.freeflagicons.com/preview/costa_rica.png" }
       :: { name = "Mexico", flagImageUrl = "" }
       :: { name = "Panama", flagImageUrl = "" }
       :: { name = "Argentina", flagImageUrl = "" }
@@ -69,15 +70,28 @@ init : ( Model, Cmd Msg )
 init =
     ( emptyModel, Cmd.none )
 
+-- Views
+
+flagUrl: Team -> String
+flagUrl team =
+  if team.flagImageUrl == "" then
+    interpolate "http://img.freeflagicons.com/preview/{0}.png" [String.toLower team.name]
+  else
+    team.flagImageUrl
+
+
+
 viewTeam: Team -> Html Msg
 viewTeam team =
-  li [] [text team.name]
+  li []
+    [ img [src <| flagUrl team, style [("width", "20px")] ] []
+    , span [] [text team.name]
+    ]
 
 view : Model -> Html Msg
 view model =
   ul [] <|
     List.map viewTeam model.teams
-
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
