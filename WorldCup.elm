@@ -24,7 +24,39 @@ type alias Team =
 
 emptyModel : Model
 emptyModel =
-    { teams = ["France", "Germany"] }
+    { teams = ["France",
+      "Germany",
+      "Egypt",
+      "Morocco",
+      "Nigeria",
+      "Senegal",
+      "Tunisia",
+      "Australia",
+      "Iran",
+      "Japan",
+      "Korea Republic",
+      "Saudi Arabia",
+      "Belgium",
+      "Croatia",
+      "Denmark",
+      "England",
+      "Germany",
+      "Iceland",
+      "Poland",
+      "Portugal",
+      "Russia",
+      "Serbia",
+      "Spain",
+      "Sweden",
+      "Switzerland",
+      "Costa Rica",
+      "Mexico",
+      "Panama",
+      "Argentina",
+      "Brazil",
+      "Colombia",
+      "Peru",
+      "Uruguay"] }
 
 type Msg
   = NoOp
