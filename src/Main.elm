@@ -107,13 +107,12 @@ viewTeam team =
   li []
     [ img [src <| flagUrl team, style [("width", "20px")] ] []
     , span [] [text team.name]
-    , span [] [text team.groupId]
     ]
 
 viewGroup: Group -> List Team -> Html Msg
 viewGroup group teams =
-  div []
-    [ span [] [text group.name]
+  div [class "inline-block col lg-col-3 md-col-3 sm-col-6"]
+    [ span [] [ text (interpolate "Group {0}" [group.name]) ]
       ,ul []
         <| List.map viewTeam teams
     ]
