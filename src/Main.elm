@@ -2,10 +2,10 @@ module Main exposing (..)
 
 -- import Dom
 import Html exposing (..)
--- import Debug exposing (log)
+import Debug exposing (log)
 import Html.Attributes exposing (..)
 import String.Interpolate exposing(interpolate)
--- import Html.Events exposing (..)
+import Html.Events exposing (..)
 -- import Html.Keyed as Keyed
 -- import Html.Lazy exposing (lazy, lazy2)
 
@@ -22,7 +22,8 @@ main =
 
 type alias Model =
   { teams: List Team
-  , groups: List Group }
+  , groups: List Group
+  , bracket: Bracket }
 
 type alias Team =
   { name: String
@@ -33,22 +34,36 @@ type alias Team =
 type alias Group =
   { name: String
   , id: String
+  , teams: List Team
+  , positions: List Team
   }
 
+type alias Match =
+  { teamA: Team
+  , teamB: Team
+  , number: Int
+  , winner: Team
+  }
 
+type alias Bracket =
+  List Match
+
+-- next matchnumber = Math.round(match# / 2) + Round-1-match-count
+-- [{ Team, Team, position, winner }]
 
 emptyModel : Model
 emptyModel =
     {
-      groups =
-        { name = "A", id = "A" }
-        :: { name = "B", id = "B" }
-        :: { name = "C", id = "C" }
-        :: { name = "D", id = "D" }
-        :: { name = "E", id = "E" }
-        :: { name = "F", id = "F" }
-        :: { name = "G", id = "G" }
-        :: { name = "H", id = "H" }
+      bracket = []
+      , groups =
+        { name = "A", id = "A", positions = [], teams = [] }
+        :: { name = "B", id = "B", positions = [], teams = [] }
+        :: { name = "C", id = "C", positions = [], teams = [] }
+        :: { name = "D", id = "D", positions = [], teams = [] }
+        :: { name = "E", id = "E", positions = [], teams = [] }
+        :: { name = "F", id = "F", positions = [], teams = [] }
+        :: { name = "G", id = "G", positions = [], teams = [] }
+        :: { name = "H", id = "H", positions = [], teams = [] }
         :: []
       , teams =
         { name = "France", flagImageUrl = "", groupId = "C" }
@@ -86,12 +101,22 @@ emptyModel =
         :: []
     }
 
-type Msg
-  = NoOp
+
+addTeamToPosition: Model -> Team -> Model
+addTeamToPosition model team =
+  { model | groups = List.map (\g -> if g.id == team.groupId then { g | positions = g.positions ++ [team], teams = List.filter (\t -> t.name /= team.name) g.teams } else g ) model.groups }
+
+setTeamsInGroup: Group -> List Group -> List Team -> List Group
+setTeamsInGroup group groups teams =
+  List.map (\g -> if g.id == group.id then { group | teams = teams } else g ) groups
+
+initGroupsWithTeams : Model -> Model
+initGroupsWithTeams model =
+  List.foldr (\group model -> { model | groups = (setTeamsInGroup group model.groups <| List.filter (\team -> team.groupId == group.id) model.teams) } ) model model.groups
 
 init : ( Model, Cmd Msg )
 init =
-    ( emptyModel, Cmd.none )
+    ( initGroupsWithTeams emptyModel, Cmd.none )
 
 -- Views
 
@@ -102,45 +127,66 @@ flagUrl team =
   else
     team.flagImageUrl
 
-viewTeam: Team -> Html Msg
-viewTeam team =
+viewPositionedTeamInGroup: Int -> Team -> Html Msg
+viewPositionedTeamInGroup position team  =
   li []
-    [ img [src <| flagUrl team, style [("width", "20px")] ] []
-    , span [] [text team.name]
+    [ div []
+      [ img [src <| flagUrl team, style [("width", "20px")] ] []
+      , span [] [ text team.name ]
+      , span [] [ text <| toString <| position + 1 ]
+      ]
     ]
 
-viewGroup: Group -> List Team -> Html Msg
-viewGroup group teams =
+viewTeamInGroup: Team -> Html Msg
+viewTeamInGroup team =
+  li [ onClick (GroupTeamClicked team) ]
+    [ div []
+      [ img [src <| flagUrl team, style [("width", "20px")] ] []
+      , span [] [text team.name]
+      , button [ class "btn" ]
+        [ i [class "fa fa-plus-square-o"] [] ]
+      ]
+    ]
+
+viewGroup: Group -> List Team -> List Team -> Html Msg
+viewGroup group positionned teams =
   div [class "inline-block col lg-col-3 md-col-3 sm-col-6"]
     [ span [] [ text (interpolate "Group {0}" [group.name]) ]
       ,ul []
-        <| List.map viewTeam teams
+        <| List.append (List.indexedMap viewPositionedTeamInGroup positionned) (List.map viewTeamInGroup teams)
     ]
 
 viewGroups: Model -> List (Html Msg)
 viewGroups model =
   List.sortBy .name model.groups
-    |> List.map (\group -> List.filter (\team -> team.groupId == group.id) model.teams |> viewGroup group )
-
+    |> List.map (\group -> viewGroup group group.positions group.teams)
 
 view : Model -> Html Msg
 view model =
   div [] <|
     viewGroups model
-  -- ul [] <|
-  --   List.map viewTeam <| List.sortBy .groupId model.teams
+
+
 
 
 -- Updates
+type Msg = GroupTeamClicked Team | NoOp
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GroupTeamClicked team ->
+          log "new Model : " ( addTeamToPosition model team, Cmd.none )
         NoOp ->
-            ( model, Cmd.none )
+          ( model, Cmd.none )
 
 -- Subscriptions
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.none
+
+
+  -- https://codepen.io/aronduby/pen/qliuj
+  -- https://github.com/agoragames/bracket_tree
+  -- https://stackoverflow.com/questions/12150313/advance-players-to-next-match-tournament-brackets-need-some-logic
